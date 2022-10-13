@@ -1,6 +1,9 @@
 'use strict'
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+import * as dotenv from 'dotenv'
+dotenv.config()
+
+console.log(process.env.MARVEL_API_BASE);
 
 import http from 'http';
 import app from "./app";
