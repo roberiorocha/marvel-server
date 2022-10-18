@@ -18,7 +18,7 @@ app.get('/characters', async (req, res) => {
       const data =await response.json();
       console.log(data);
       res.json({
-        test: "a"
+        test: data
       })
   }catch(err){
     console.log(err)
@@ -26,12 +26,22 @@ app.get('/characters', async (req, res) => {
   }
 })
 
+app.post("/auth/signup", async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+    res.json({});
 
+  } catch (err) {
+
+  }
+});
 
 app.post('/characters', async (req, res) => {
   res.json({
     test: "a"
   })
 })
+
+
 
 export default app;
