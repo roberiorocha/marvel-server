@@ -1,4 +1,9 @@
 
 {
-    "users": []
+    "users": [
+        {
+            "id": 0,
+            "email": "roberiorocha@gmail.com"
+        }
+    ]
 }
