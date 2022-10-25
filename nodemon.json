@@ -1,7 +1,5 @@
 {
-"exec": "npm run dev",
-"watch": [
-    "src/*"
-],
-"ignore": []
-}
+    "exec": "npm run dev",
+    "watch": ["src/*"],
+    "ignore": ["src/db/db.json"]
+  }

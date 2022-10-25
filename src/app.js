@@ -1,7 +1,14 @@
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
-import { stringify } from "querystring";
+import createError from "http-errors";
+
+// import { checkIfIsAutenticated, logErrors } from "./middlewares";
+import { fetchApi } from "./api";
+import { singToken, userAlreadyExists } from "./auth";
+import { readDBAsync } from "./DB/db";
+import { writeDBAsync } from "./DB/db";
+
 
 const app = express();
 
@@ -10,46 +17,45 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const characters = [
-  {
-    id: 1,
-    name: "Personagem 1"
-  },
-  {
-    id: 2,
-    name: "Personagem 2"
-  },
-  {
-    id: 3,
-    name: "Personagem 3"
+app.get('/characters', async (req, res, next) => {
+  try {
+    const response = await fetchApi("/characters")
+    const data = await response.json()
+    const resultado = data.data.results
+    res.json(resultado)
+  } catch (error) {
+    console.log(error)
   }
-]
-
-app.get('/', (req, res) => {
-  res.json({
-    test: "a"
-  })
 })
 
-app.get('/characters', (req, res) => {
-  res.json({
-    characters
-  })
-})
+app.post('/auth/signup', async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
 
-app.post('/characters', (req, res) => {
-  console.log(req.body);
-  res.json({
-    test: "a"
-  })
-})
+    const userExist = await userAlreadyExists({ email });
 
-app.get('/characters/:id', async(req, res) => {
-  const {id} = req.params;
-  console.log("id", id);
-  res.json({
-    characters: characters.filter((character) => String(character.id) === String(id))
-  })
-})
+    if(userExist){
+      throw "Access is denied due to invalid credentials"
+    }
+    const db = await readDBAsync()
+    const lastAddedUser = db.users[db.users.length - 1]
+    const id = lastAddedUser ? lastAddedUser.id + 1 : 0;
+
+    const user = {
+      id,
+      name,
+      email,
+      password
+    };
+
+    db.users.push(user);
+
+    await writeDBAsync(db)
+    const access_token = singToken({ email });
+    res.status(200).json({user,access_token});
+  } catch (err) {
+    next(createError(401));
+  }
+});
 
 export default app;
